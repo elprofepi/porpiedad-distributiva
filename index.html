@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Propiedad Distributiva</title>
+    <style>
+        /* Reset de márgenes y paddings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        }
+
+        .game-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        #equation {
+            font-size: 28px;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        #answers {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            font-size: 18px;
+            padding: 8px;
+            width: 60px;
+            border: 2px solid #66a6ff;
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #89f7fe;
+            outline: none;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 10px 25px;
+            background-color: #66a6ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #89f7fe;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #feedback {
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 24px;
+            transition: color 0.3s;
+        }
+
+        #puntuacion {
+            margin-top: 10px;
+            color: #333;
+        }
+
+        /* Indicador de Progreso */
+        #progreso {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        /* Animaciones para feedback */
+        .correcto {
+            color: #4CAF50;
+            animation: correctAnim 0.5s;
+        }
+
+        .incorrecto {
+            color: #F44336;
+            animation: incorrectAnim 0.5s;
+        }
+
+        @keyframes correctAnim {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        @keyframes incorrectAnim {
+            from { transform: scale(1); }
+            to { transform: scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Juego de Propiedad Distributiva</h1>
+        <p>Resuelve la siguiente ecuación usando la propiedad distributiva:</p>
+        <div id="equation"></div>
+        <div id="answers">
+            <input type="number" id="answer1" placeholder="a·b"> 
+            <span id="operator"></span>
+            <input type="number" id="answer2" placeholder="a·c"> =
+            <span id="total" style="visibility:hidden;"></span>
+        </div>
+        <button id="checkButton" onclick="verificarRespuesta()">Comprobar</button>
+        <p id="feedback"></p>
+        <p id="puntuacion">Puntuación: 0</p>
+        <p id="progreso">Preguntas Respondidas: 0</p>
+    </div>
+
+    <script>
+        let a, b, c, isSubtraction;
+        let puntuacion = 0;
+        let preguntasRespondidas = 0;
+
+        // Opcional: Agregar sonidos
+        // const correctSound = new Audio('ruta/a/sound_correct.mp3');
+        // const incorrectSound = new Audio('ruta/a/sound_incorrect.mp3');
+
+        function generarEcuacion() {
+            a = Math.floor(Math.random() * 10) + 1;
+            isSubtraction = Math.random() < 0.5;  // 50% de probabilidad de resta
+            
+            if (isSubtraction) {
+                b = Math.floor(Math.random() * 10) + 1;
+                c = Math.floor(Math.random() * b) + 1;  // Asegura que c sea menor que b
+            } else {
+                b = Math.floor(Math.random() * 10) + 1;
+                c = Math.floor(Math.random() * 10) + 1;
+            }
+            
+            let operatorSymbol = isSubtraction ? '-' : '+';
+            document.getElementById('equation').textContent = `${a} × (${b} ${operatorSymbol} ${c}) =`;
+            document.getElementById('operator').textContent = operatorSymbol;
+            document.getElementById('total').textContent = isSubtraction ? a * (b - c) : a * (b + c);
+            document.getElementById('total').style.visibility = 'hidden';
+            document.getElementById('answer1').value = '';
+            document.getElementById('answer2').value = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = '';
+            document.getElementById('checkButton').disabled = false;
+        }
+
+        function verificarRespuesta() {
+            const respuesta1 = parseInt(document.getElementById('answer1').value);
+            const respuesta2 = parseInt(document.getElementById('answer2').value);
+            const total = isSubtraction ? a * (b - c) : a * (b + c);
+
+            // Validar que ambas respuestas estén completas
+            if (isNaN(respuesta1) || isNaN(respuesta2)) {
+                document.getElementById('feedback').textContent = 'Por favor, completa ambas respuestas.';
+                document.getElementById('feedback').className = 'incorrecto';
+                return;
+            }
+
+            // Verificar respuestas
+            if (respuesta1 === a * b && respuesta2 === a * c) {
+                puntuacion++;
+                preguntasRespondidas++;
+                document.getElementById('feedback').textContent = '¡Correcto! 🎉';
+                document.getElementById('feedback').className = 'correcto';
+                // correctSound.play(); // Opcional
+            } else {
+                preguntasRespondidas++;
+                let correctAnswer = isSubtraction ? 
+                    `${a} × ${b} - ${a} × ${c} = ${total}` :
+                    `${a} × ${b} + ${a} × ${c} = ${total}`;
+                document.getElementById('feedback').textContent = `Incorrecto. La respuesta correcta es ${correctAnswer}.`;
+                document.getElementById('feedback').className = 'incorrecto';
+                // incorrectSound.play(); // Opcional
+            }
+
+            document.getElementById('puntuacion').textContent = `Puntuación: ${puntuacion}`;
+            document.getElementById('progreso').textContent = `Preguntas Respondidas: ${preguntasRespondidas}`;
+            document.getElementById('checkButton').disabled = true;
+
+            // Mostrar la respuesta correcta después de un breve retraso
+            setTimeout(() => {
+                document.getElementById('total').style.visibility = 'visible';
+                setTimeout(() => {
+                    generarEcuacion();
+                }, 1500);
+            }, 500);
+        }
+
+        // Generar la primera ecuación al cargar la página
+        window.onload = generarEcuacion;
+    </script>
+</body>
+</html>
